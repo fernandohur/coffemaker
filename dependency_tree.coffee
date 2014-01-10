@@ -34,6 +34,6 @@ class DependencyTree
 # TODO
 class DependencyNode
 
-    constructor:(@path, @children=[])
+    constructor:(@path, @children=[])->
 
 
