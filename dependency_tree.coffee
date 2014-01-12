@@ -27,6 +27,11 @@ class DependencyTree
             dep.path = dep.path.replace(@rootDir+"/","")
         return deps
 
+    ###
+        Given a list of dependencies { path:<file path>, dependencies: [ <path1>,<path2>,...,<pathN> ] }
+        Creates a graph structure of DependencyNode and returns the root nodes in the dependency graph/tree
+        @return {Array of DependencyNode}
+    ###
     createTree:(deps)->
         # this maps <file name> => DependencyNode
         pathHash = {}
@@ -47,6 +52,9 @@ class DependencyTree
         @printTrees(result)
         return result
 
+    ###
+        Pretty prints the tree in the standard console
+    ###
     printTrees:(rootList)->
         for node in rootList
             @levelIteration node, (node, level)->
@@ -56,6 +64,11 @@ class DependencyTree
                     level--
                 console.log "#{space} {#{node.path}}"
 
+    ###
+        Does a BFS over the tree and calls the callback function passing the node as parameter
+        @param {DependencyNode}     node        the root node to iterate through
+        @param {function}           callback    function(node) the current node
+    ###
     bfs:(node, callback)->
         queue = [node]
         while queue.length > 0
@@ -94,38 +107,91 @@ class DependencyTree
 
         return result
 
-# TODO
+###
+
+    A node in the DependencyTree
+    Note that one of the properties of DependencyNode is the parents. This is because the DependencyTree is actually a
+    Series of trees which can overlap forming a graph. See the following example:
+
+    Dependencies:
+        A > B
+        B > C,D
+        D > E
+        F > D,E
+
+    The result tree structure is
+
+          A
+         /
+        B
+       / \
+      C   D
+         /
+        E
+
+      F
+     / \
+    D   E
+
+    So as can bee seen, the Node <D> has 2 parents, F and B
+
+
+###
 class DependencyNode
 
+    ###
+        Constructs a new DependencyNode
+        @param {string} path    a file path name
+    ###
     constructor:(@path)->
         @dependencies = []
         @parents = []
 
+    ###
+        Adds a dependency to this nodes children
+        @param {DependencyNode}     node
+    ###
     addDependency:(node)->
         @dependencies.push node
         node.parents.push this
 
+    ###
+        @returns {Array of string} the path of every child Node
+    ###
     getDependencyPaths:()->
         result = []
         for node in @dependencies
             result.push node.path
         return result
 
+    ###
+        @return {Array of string} returns the path of every parent node
+    ###
     getParentPaths:()->
         result = []
         for node in @parents
             result.push node.path
         return result
 
+    ###
+        @return {boolean} returns true if this node has no parents
+    ###
     isRoot:()->
         return @parents.length == 0
 
-    # callback = function(DependencyNode, currentLevel)
+    ###
+        Iterates the tree and calls the callback function passing the current level as parameter
+        @param {number}     currentLevel
+        @param {function}   callback        function(DependencyNode, currentLevel)
+    ###
     levelIteration:(currentLevel, callback)->
         callback(this, currentLevel)
         for dep in @dependencies
             dep.levelIteration(currentLevel+1, callback)
 
+###
+    Export the DependencyTree
+###
 module.exports = {
 
     DependencyTree: DependencyTree
