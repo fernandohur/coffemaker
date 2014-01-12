@@ -16,6 +16,7 @@
 ###
 
 fs = require 'fs'
+dependencyTree = require "./dependency_tree"
 
 class CoffeeMaker
 
@@ -34,8 +35,7 @@ class CoffeeMaker
                 dependencies = fileParser.getDependencies()
                 dependencyList.push(dependencies)
 
-        console.log dependencyList
-        #dependencyTree = new DependencyTree(dependencyList)
+        dependencyTree = new dependencyTree.DependencyTree(@dir, dependencyList)
         return dependencyTree.getResolvedDependencies()
 
     ###
@@ -104,4 +104,4 @@ class FileParser
 
 console.log "starting CoffeeMaker"
 coffeeMaker = new CoffeeMaker('./test')
-coffeeMaker.getResolvedDependencies()
+console.log coffeeMaker.getResolvedDependencies()
